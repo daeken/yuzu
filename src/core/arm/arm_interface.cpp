@@ -275,4 +275,7 @@ void ARM_Interface::LogBacktrace() const {
     }
 }
 
+void ARM_Interface::Initialize() {
+}
+
 } // namespace Core

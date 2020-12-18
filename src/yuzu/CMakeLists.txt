@@ -283,3 +283,21 @@ if (ENABLE_VULKAN)
     target_include_directories(yuzu PRIVATE ../../externals/Vulkan-Headers/include)
     target_compile_definitions(yuzu PRIVATE HAS_VULKAN)
 endif()
+
+if (APPLE)
+    find_library(COREAUDIO CoreAudio)
+    find_library(COREMEDIA CoreMedia)
+    find_library(COREVIDEO CoreVideo)
+    find_library(AUDIOTOOLBOX AudioToolbox)
+    find_library(VIDEOTOOLBOX VideoToolbox)
+    find_library(SWRESAMPLE swresample)
+    target_link_libraries(yuzu PRIVATE ${COREAUDIO} ${COREMEDIA} ${COREVIDEO} ${AUDIOTOOLBOX} ${VIDEOTOOLBOX} ${SWRESAMPLE} "-liconv")
+
+    add_custom_command(
+        COMMAND codesign --entitlements ${CMAKE_CURRENT_SOURCE_DIR}/yuzu.entitlements -f -s - ${CMAKE_BINARY_DIR}/bin/yuzu.app
+        OUTPUT ${CMAKE_BINARY_DIR}/bin/yuzu.app/Contents/_CodeSignature/CodeResources
+        DEPENDS yuzu
+        COMMENT "Signing yuzu.app"
+    )
+    add_custom_target(signing ALL DEPENDS ${CMAKE_BINARY_DIR}/bin/yuzu.app/Contents/_CodeSignature/CodeResources)
+endif()

@@ -56,6 +56,12 @@ EmuWindow_SDL2_VK::EmuWindow_SDL2_VK(InputCommon::InputSubsystem* input_subsyste
         window_info.render_surface = wm.info.wl.surface;
         break;
 #endif
+#ifdef SDL_VIDEO_DRIVER_COCOA
+    case SDL_SYSWM_TYPE::SDL_SYSWM_COCOA:
+        window_info.type = Core::Frontend::WindowSystemType::MacOS;
+        window_info.render_surface = reinterpret_cast<void*>(wm.info.cocoa.window);
+        break;
+#endif
     default:
         LOG_CRITICAL(Frontend, "Window manager subsystem not implemented");
         std::exit(EXIT_FAILURE);

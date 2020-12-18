@@ -6,6 +6,7 @@
 
 #include <array>
 #include <vector>
+#include <string>
 #include "common/common_types.h"
 #include "core/hardware_properties.h"
 
@@ -191,6 +192,8 @@ public:
     /// fp+0 : pointer to previous frame record
     /// fp+8 : value of lr for frame
     void LogBacktrace() const;
+
+    virtual void Initialize();
 
 protected:
     /// System context that this ARM interface is running under.

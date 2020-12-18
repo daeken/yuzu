@@ -43,12 +43,12 @@ constexpr std::array REQUIRED_EXTENSIONS{
     VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME,
     VK_KHR_16BIT_STORAGE_EXTENSION_NAME,
     VK_KHR_8BIT_STORAGE_EXTENSION_NAME,
-    VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
+    //VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME,
     VK_KHR_DESCRIPTOR_UPDATE_TEMPLATE_EXTENSION_NAME,
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
     VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME,
-    VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME,
-    VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME,
+    //VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME,
+    //VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME,
     VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
 };
 
@@ -216,7 +216,7 @@ bool VKDevice::Create() {
         .fullDrawIndexUint32 = false,
         .imageCubeArray = false,
         .independentBlend = true,
-        .geometryShader = true,
+        //.geometryShader = true,
         .tessellationShader = true,
         .sampleRateShading = false,
         .dualSrcBlend = false,
@@ -552,12 +552,12 @@ bool VKDevice::IsSuitable(vk::PhysicalDevice physical, VkSurfaceKHR surface) {
     const auto properties{physical.GetProperties()};
     const auto& limits{properties.limits};
 
-    constexpr u32 required_ubo_size = 65536;
+    /*constexpr u32 required_ubo_size = 65536;
     if (limits.maxUniformBufferRange < required_ubo_size) {
         LOG_ERROR(Render_Vulkan, "Device UBO size {} is too small, {} is required",
                   limits.maxUniformBufferRange, required_ubo_size);
         is_suitable = false;
-    }
+    }*/
 
     constexpr u32 required_num_viewports = 16;
     if (limits.maxViewports < required_num_viewports) {
@@ -575,7 +575,7 @@ bool VKDevice::IsSuitable(vk::PhysicalDevice physical, VkSurfaceKHR surface) {
         std::make_pair(features.largePoints, "largePoints"),
         std::make_pair(features.multiViewport, "multiViewport"),
         std::make_pair(features.depthBiasClamp, "depthBiasClamp"),
-        std::make_pair(features.geometryShader, "geometryShader"),
+        //std::make_pair(features.geometryShader, "geometryShader"),
         std::make_pair(features.tessellationShader, "tessellationShader"),
         std::make_pair(features.occlusionQueryPrecise, "occlusionQueryPrecise"),
         std::make_pair(features.fragmentStoresAndAtomics, "fragmentStoresAndAtomics"),

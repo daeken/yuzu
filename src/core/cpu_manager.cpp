@@ -355,6 +355,12 @@ void CpuManager::RunThread(std::size_t core) {
         MicroProfileOnThreadExit();
     });
 
+    auto& physical_core = system.Kernel().CurrentPhysicalCore();
+    LOG_ERROR(Core_ARM, "Core index for thread: {}", physical_core.CoreIndex());
+    while (!physical_core.IsInitialized()) { usleep(1000); } // TODO: Add a proper watcher here
+    auto& arm_interface = physical_core.ArmInterface();
+    arm_interface.Initialize();
+
     /// Running
     while (running_mode) {
         data.is_running = false;

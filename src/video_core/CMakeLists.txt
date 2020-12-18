@@ -53,8 +53,6 @@ add_library(video_core STATIC
     macro/macro_hle.h
     macro/macro_interpreter.cpp
     macro/macro_interpreter.h
-    macro/macro_jit_x64.cpp
-    macro/macro_jit_x64.h
     fence_manager.h
     gpu.cpp
     gpu.h
@@ -266,7 +264,7 @@ endif()
 create_target_directory_groups(video_core)
 
 target_link_libraries(video_core PUBLIC common core)
-target_link_libraries(video_core PRIVATE glad xbyak)
+target_link_libraries(video_core PRIVATE glad)
 
 if (MSVC)
     target_include_directories(video_core PRIVATE ${FFMPEG_INCLUDE_DIR})
@@ -319,4 +317,12 @@ else()
         $<$<CXX_COMPILER_ID:GNU>:-Werror=unused-but-set-parameter>
         $<$<CXX_COMPILER_ID:GNU>:-Werror=unused-but-set-variable>
     )
+endif()
+
+if (ARCHITECTURE_x86_64)
+    target_sources(video_core STATIC
+        macro/macro_jit_x64.cpp
+        macro/macro_jit_x64.h
+    )
+    target_link_libraries(video_core PRIVATE xbyak)
 endif()
