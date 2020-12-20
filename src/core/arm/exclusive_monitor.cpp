@@ -5,6 +5,9 @@
 #ifdef ARCHITECTURE_x86_64
 #include "core/arm/dynarmic/arm_exclusive_monitor.h"
 #endif
+#ifdef ARCHITECTURE_ARM64
+#include "core/arm/hypervisor/hypervisor_exclusive_monitor.h"
+#endif
 #include "core/arm/exclusive_monitor.h"
 #include "core/memory.h"
 
@@ -17,8 +20,12 @@ std::unique_ptr<Core::ExclusiveMonitor> MakeExclusiveMonitor(Memory::Memory& mem
 #ifdef ARCHITECTURE_x86_64
     return std::make_unique<Core::DynarmicExclusiveMonitor>(memory, num_cores);
 #else
+#ifdef ARCHITECTURE_ARM64
+    return std::make_unique<Core::HypervisorExclusiveMonitor>(memory, num_cores);
+#else
     // TODO(merry): Passthrough exclusive monitor
     return nullptr;
+#endif
 #endif
 }
 

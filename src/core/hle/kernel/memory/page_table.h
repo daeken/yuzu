@@ -12,6 +12,7 @@
 #include "core/file_sys/program_metadata.h"
 #include "core/hle/kernel/memory/memory_block.h"
 #include "core/hle/kernel/memory/memory_manager.h"
+#include "core/hle/kernel/memory/memory_observer.h"
 #include "core/hle/result.h"
 
 namespace Core {
@@ -113,6 +114,7 @@ private:
 
     std::recursive_mutex page_table_lock;
     std::unique_ptr<MemoryBlockManager> block_manager;
+    std::unique_ptr<Memory::MemoryObserver> memory_observer;
 
 public:
     constexpr VAddr GetAddressSpaceStart() const {

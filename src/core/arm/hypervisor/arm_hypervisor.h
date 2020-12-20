@@ -6,12 +6,46 @@
 
 #include "common/common_types.h"
 #include "core/arm/arm_interface.h"
+#include "core/hle/kernel/memory/memory_observer.h" // TODO: Holy broken abstraction, batman
 
+#include <queue>
 #include <Hypervisor/Hypervisor.h>
+
+using namespace Kernel::Memory;
 
 namespace Core {
 
 class System;
+
+struct TablePointer {
+    u64 physAddr;
+    u64* table;
+    TablePointer* subtables[512];
+};
+
+class ARM_Hypervisor_MemoryObserver final : public MemoryObserver {
+public:
+    ARM_Hypervisor_MemoryObserver(Core::System& system);
+    ~ARM_Hypervisor_MemoryObserver() override;
+
+    void Allocated(const PageLinkedList& page_list, VAddr addr, MemoryPermission perm) override;
+    void Mapped(u64 paddr, VAddr addr, size_t num_pages, MemoryPermission perm) override;
+    void PermissionsChanged(VAddr addr, std::size_t num_pages, MemoryPermission perm) override;
+    void Freed(const PageLinkedList& page_list, VAddr addr) override;
+
+    TablePointer* pageTableBase;
+    VAddr vbaBase;
+
+private:
+    u64 FindOpenPage();
+    TablePointer* AllocateTable();
+    u64* GetEntryFor(VAddr addr);
+
+    std::queue<TablePointer*> freeTables;
+    std::vector<void*> allocatedPhysPages; // This only tracks the pages allocated *by* the observer, for cleanup
+    std::queue<u64> openPhysPages;
+    u64 physTop;
+};
 
 class ARM_Hypervisor final : public ARM_Interface {
 public:

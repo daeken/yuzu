@@ -18,6 +18,10 @@
 #include "core/hle/kernel/resource_limit.h"
 #include "core/memory.h"
 
+#ifdef ARCHITECTURE_ARM64
+#include "core/arm/hypervisor/arm_hypervisor.h"
+#endif
+
 namespace Kernel::Memory {
 
 namespace {
@@ -57,7 +61,13 @@ constexpr std::size_t GetSizeInRange(const MemoryInfo& info, VAddr start, VAddr 
 
 } // namespace
 
-PageTable::PageTable(Core::System& system) : system{system} {}
+PageTable::PageTable(Core::System& system) :
+#ifdef ARCHITECTURE_ARM64
+    memory_observer{std::make_unique<Core::ARM_Hypervisor_MemoryObserver>(system)},
+#endif
+    system{system}
+{
+}
 
 ResultCode PageTable::InitializeForProcess(FileSys::ProgramAddressSpaceType as_type,
                                            bool enable_aslr, VAddr code_addr, std::size_t code_size,
@@ -288,8 +298,14 @@ ResultCode PageTable::MapProcessCode(VAddr addr, std::size_t num_pages, MemorySt
     CASCADE_CODE(
         system.Kernel().MemoryManager().Allocate(page_linked_list, num_pages, memory_pool));
     CASCADE_CODE(Operate(addr, num_pages, page_linked_list, OperationType::MapGroup));
+#ifdef ARCHITECTURE_ARM64
+        memory_observer->Allocated(page_linked_list, addr, perm);
+#endif
 
     block_manager->Update(addr, num_pages, state, perm);
+#ifdef ARCHITECTURE_ARM64
+    memory_observer->PermissionsChanged(addr, num_pages, perm);
+#endif
 
     return RESULT_SUCCESS;
 }
@@ -384,6 +400,9 @@ void PageTable::MapPhysicalMemory(PageLinkedList& page_linked_list, VAddr start,
             const std::size_t num_pages{std::min(src_num_pages, dst_num_pages)};
             Operate(dst_addr, num_pages, MemoryPermission::ReadAndWrite, OperationType::Map,
                     map_addr);
+#ifdef ARCHITECTURE_ARM64
+            memory_observer->Mapped(map_addr, dst_addr, num_pages, MemoryPermission::ReadAndWrite);
+#endif
 
             dst_addr += num_pages * PageSize;
             map_addr += num_pages * PageSize;
@@ -601,6 +620,9 @@ ResultCode PageTable::MapPages(VAddr addr, const PageLinkedList& page_linked_lis
     VAddr cur_addr{addr};
 
     for (const auto& node : page_linked_list.Nodes()) {
+#ifdef ARCHITECTURE_ARM64
+        memory_observer->Mapped(node.GetAddress(), cur_addr, node.GetNumPages(), perm);
+#endif
         if (const auto result{
                 Operate(cur_addr, node.GetNumPages(), perm, OperationType::Map, node.GetAddress())};
             result.IsError()) {
@@ -683,6 +705,9 @@ ResultCode PageTable::SetCodeMemoryPermission(VAddr addr, std::size_t size, Memo
     CASCADE_CODE(Operate(addr, num_pages, perm, operation));
 
     block_manager->Update(addr, num_pages, state, perm);
+#ifdef ARCHITECTURE_ARM64
+    memory_observer->PermissionsChanged(addr, num_pages, perm);
+#endif
 
     return RESULT_SUCCESS;
 }
@@ -716,6 +741,9 @@ ResultCode PageTable::ReserveTransferMemory(VAddr addr, std::size_t size, Memory
                                   MemoryAttribute::IpcAndDeviceMapped));
 
     block_manager->Update(addr, size / PageSize, state, perm, attribute | MemoryAttribute::Locked);
+#ifdef ARCHITECTURE_ARM64
+    memory_observer->PermissionsChanged(addr, size / PageSize, perm);
+#endif
 
     return RESULT_SUCCESS;
 }
@@ -733,6 +761,9 @@ ResultCode PageTable::ResetTransferMemory(VAddr addr, std::size_t size) {
                                   MemoryAttribute::IpcAndDeviceMapped));
 
     block_manager->Update(addr, size / PageSize, state, MemoryPermission::ReadAndWrite);
+#ifdef ARCHITECTURE_ARM64
+    memory_observer->PermissionsChanged(addr, size / PageSize, MemoryPermission::ReadAndWrite);
+#endif
 
     return RESULT_SUCCESS;
 }
@@ -792,6 +823,9 @@ ResultVal<VAddr> PageTable::SetHeapSize(std::size_t size) {
 
         CASCADE_CODE(
             system.Kernel().MemoryManager().Allocate(page_linked_list, num_pages, memory_pool));
+#ifdef ARCHITECTURE_ARM64
+        memory_observer->Allocated(page_linked_list, current_heap_addr, MemoryPermission::ReadAndWrite);
+#endif
 
         if (IsRegionMapped(current_heap_addr, delta)) {
             return ERR_INVALID_ADDRESS_STATE;
@@ -831,11 +865,17 @@ ResultVal<VAddr> PageTable::AllocateAndMapMemory(std::size_t needed_num_pages, s
 
     if (is_map_only) {
         CASCADE_CODE(Operate(addr, needed_num_pages, perm, OperationType::Map, map_addr));
+#ifdef ARCHITECTURE_ARM64
+        memory_observer->Mapped(map_addr, addr, needed_num_pages, perm);
+#endif
     } else {
         PageLinkedList page_group;
         CASCADE_CODE(
             system.Kernel().MemoryManager().Allocate(page_group, needed_num_pages, memory_pool));
         CASCADE_CODE(Operate(addr, needed_num_pages, page_group, OperationType::MapGroup));
+#ifdef ARCHITECTURE_ARM64
+        memory_observer->Allocated(page_group, addr, perm);
+#endif
     }
 
     block_manager->Update(addr, needed_num_pages, state, perm);

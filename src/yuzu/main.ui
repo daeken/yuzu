@@ -295,6 +295,9 @@
    <property name="text">
     <string>Configure Current Game...</string>
    </property>
+   <property name="menuRole">
+    <enum>NoRole</enum>
+   </property>
   </action>
  </widget>
  <resources/>

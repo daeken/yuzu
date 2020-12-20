@@ -667,6 +667,7 @@ if (ARCHITECTURE_ARM64)
     find_library(HYPERVISOR Hypervisor)
     target_sources(core PRIVATE
         arm/hypervisor/arm_hypervisor.cpp
+        arm/hypervisor/hypervisor_exclusive_monitor.cpp
     )
     target_link_libraries(core PRIVATE ${HYPERVISOR})
 endif()
