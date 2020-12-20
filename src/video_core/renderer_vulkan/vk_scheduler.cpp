@@ -60,7 +60,7 @@ bool VKScheduler::IsFree(u64 tick) const noexcept {
 }
 
 void VKScheduler::Wait(u64 tick) {
-    master_semaphore->Wait(tick);
+    //master_semaphore->Wait(tick);
 }
 
 void VKScheduler::Flush(VkSemaphore semaphore) {

@@ -72,14 +72,13 @@ NvResult nvhost_ctrl::IocCtrlEventWait(const std::vector<u8>& input, std::vector
                                        bool is_async, IoctlCtrl& ctrl) {
     IocCtrlEventWaitParams params{};
     std::memcpy(&params, input.data(), sizeof(params));
-    LOG_DEBUG(Service_NVDRV, "syncpt_id={}, threshold={}, timeout={}, is_async={}",
-              params.syncpt_id, params.threshold, params.timeout, is_async);
+    u32 event_id = params.value & 0x00FF;
+    LOG_DEBUG(Service_NVDRV, "syncpt_id={}, event_id={}, threshold={}, timeout={}, is_async={}",
+              params.syncpt_id, event_id, params.threshold, params.timeout, is_async);
 
     if (params.syncpt_id >= MaxSyncPoints) {
         return NvResult::BadParameter;
     }
-
-    u32 event_id = params.value & 0x00FF;
 
     if (event_id >= MaxNvEvents) {
         std::memcpy(output.data(), &params, sizeof(params));

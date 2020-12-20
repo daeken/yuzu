@@ -37,7 +37,7 @@ VkSurfaceFormatKHR ChooseSwapSurfaceFormat(vk::Span<VkSurfaceFormatKHR> formats,
 
 VkPresentModeKHR ChooseSwapPresentMode(vk::Span<VkPresentModeKHR> modes) {
     // Mailbox doesn't lock the application like fifo (vsync), prefer it
-    const auto found = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR);
+    const auto found = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR); // TODO: Switch back to VK_PRESENT_MODE_MAILBOX_KHR
     return found != modes.end() ? *found : VK_PRESENT_MODE_FIFO_KHR;
 }
 
