@@ -177,7 +177,11 @@ void FixedPipelineState::DynamicState::Fill(const Maxwell& regs) {
         VertexBinding& binding = vertex_bindings[index];
         binding.raw = 0;
         binding.enabled.Assign(input.IsEnabled() ? 1 : 0);
-        binding.stride.Assign(static_cast<u16>(input.stride.Value()));
+        auto stride = static_cast<u16>(input.stride.Value());
+        if (stride % 4) {
+            stride += 4 - (stride % 4);
+        }
+        binding.stride.Assign(stride);
     }
 }
 

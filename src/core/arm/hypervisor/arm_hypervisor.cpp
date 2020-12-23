@@ -288,7 +288,10 @@ void ARM_Hypervisor::ClearExclusiveState() {
 
 void ARM_Hypervisor::Run() {
     while (true) {
-        //LOG_CRITICAL(Core_ARM, "RUNNING FROM 0x{:x}", GetPC());
+        /*LOG_CRITICAL(Core_ARM, "Core {} thread {} -- RUNNING FROM 0x{:x}",
+            system.CurrentCoreIndex(),
+            system.CurrentScheduler().GetCurrentThread()->GetThreadID(),
+            GetPC());*/
         HV_GUARD(hv_vcpu_run(vcpu));
 
         switch (exit_info->reason) {
@@ -297,11 +300,13 @@ void ARM_Hypervisor::Run() {
             return;
         case HV_EXIT_REASON_EXCEPTION: {
             auto elr = GetHvSysReg(HV_SYS_REG_ELR_EL1);
-            //LOG_CRITICAL(Core_ARM, "EXITED FROM 0x{:x}", elr);
+            /*LOG_CRITICAL(Core_ARM, "Core {} thread {} -- EXITED FROM 0x{:x}",
+                system.CurrentCoreIndex(),
+                system.CurrentScheduler().GetCurrentThread()->GetThreadID(),
+                elr);*/
             //LOG_CRITICAL(Core_ARM, "LR 0x{:x}", GetHvReg(HV_REG_LR));
 
             auto esr = GetHvSysReg(HV_SYS_REG_ESR_EL1);
-            auto far = GetHvSysReg(HV_SYS_REG_FAR_EL1);
             auto ec = esr >> 26;
             switch (ec) {
             case 0b011000: { // MSR/MRS trap
@@ -326,11 +331,16 @@ void ARM_Hypervisor::Run() {
             case 0b100000: // Insn abort
                 LOG_CRITICAL(Core_ARM, "Instruction abort");
                 UNIMPLEMENTED();
-            case 0b100100: // Data abort
+            case 0b100100: { // Data abort
+                auto far = GetHvSysReg(HV_SYS_REG_FAR_EL1);
                 LOG_CRITICAL(Core_ARM, "Data abort accessing 0x{:x}", far);
                 UNIMPLEMENTED();
+            }
             case 0b010101: // SVC
-                //LOG_CRITICAL(Core_ARM, "Got SVC 0x{:x}", esr & 0xFFFF);
+                /*LOG_CRITICAL(Core_ARM, "Core {} thread {} -- Got SVC 0x{:x}",
+                    system.CurrentCoreIndex(),
+                    system.CurrentScheduler().GetCurrentThread()->GetThreadID(),
+                    esr & 0xFFFF);*/
                 SetHvReg(HV_REG_CPSR, GetHvSysReg(HV_SYS_REG_SPSR_EL1));
                 SetPC(elr);
                 Kernel::Svc::Call(system, esr & 0xFFFF);
@@ -352,7 +362,7 @@ void ARM_Hypervisor::Step() {
 }
 
 void ARM_Hypervisor::ExceptionalExit() {
-    HV_GUARD(hv_vcpus_exit(&vcpu, 1));
+    //HV_GUARD(hv_vcpus_exit(&vcpu, 1));
 }
 
 void ARM_Hypervisor::ClearInstructionCache() {

@@ -421,9 +421,15 @@ VkImageView CachedSurfaceView::GetImageView(SwizzleSource x_source, SwizzleSourc
         ASSERT(num_slices == surface_params.depth);
     }
 
+    VkImageViewUsageCreateInfoKHR usage {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    };
+
     image_view = device.GetLogical().CreateImageView({
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = nullptr,
+        .pNext = &usage,
         .flags = 0,
         .image = surface.GetImageHandle(),
         .viewType = image_view_type,
@@ -453,9 +459,15 @@ VkImageView CachedSurfaceView::GetAttachment() {
         return *render_target;
     }
 
+    VkImageViewUsageCreateInfoKHR usage {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    };
+
     VkImageViewCreateInfo ci{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = nullptr,
+        .pNext = &usage,
         .flags = 0,
         .image = surface.GetImageHandle(),
         .viewType = VK_IMAGE_VIEW_TYPE_1D,

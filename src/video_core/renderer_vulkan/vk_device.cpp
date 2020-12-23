@@ -733,6 +733,8 @@ std::vector<const char*> VKDevice::LoadExtensions() {
         }
     }
 
+    extensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+
     return extensions;
 }
 
