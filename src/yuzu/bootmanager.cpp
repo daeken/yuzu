@@ -250,6 +250,15 @@ public:
 };
 #endif
 
+#ifdef HAS_METAL
+class MetalRenderWidget : public RenderWidget {
+public:
+    explicit MetalRenderWidget(GRenderWindow* parent) : RenderWidget(parent) {
+        windowHandle()->setSurfaceType(QWindow::MetalSurface);
+    }
+};
+#endif
+
 static Core::Frontend::WindowSystemType GetWindowSystemType() {
     // Determine WSI type based on Qt platform.
     QString platform_name = QGuiApplication::platformName();
@@ -270,7 +279,7 @@ static Core::Frontend::EmuWindow::WindowSystemInfo GetWindowSystemInfo(QWindow* 
     Core::Frontend::EmuWindow::WindowSystemInfo wsi;
     wsi.type = GetWindowSystemType();
 
-#ifdef HAS_VULKAN
+#if defined(HAS_VULKAN) || defined(HAS_METAL)
     // Our Win32 Qt external doesn't have the private API.
 #if defined(WIN32) || defined(__APPLE__)
     wsi.render_surface = window ? reinterpret_cast<void*>(window->winId()) : nullptr;
@@ -515,6 +524,11 @@ bool GRenderWindow::InitRenderTarget() {
             return false;
         }
         break;
+    case Settings::RendererBackend::Metal:
+        if (!InitializeMetal()) {
+            return false;
+        }
+        break;
     }
 
     // Update the Window System information with the new render target
@@ -606,6 +620,21 @@ bool GRenderWindow::InitializeVulkan() {
 #else
     QMessageBox::critical(this, tr("Vulkan not available!"),
                           tr("yuzu has not been compiled with Vulkan support."));
+    return false;
+#endif
+}
+
+bool GRenderWindow::InitializeMetal() {
+#ifdef HAS_METAL
+    auto child = new MetalRenderWidget(this);
+    child_widget = child;
+    child_widget->windowHandle()->create();
+    main_context = std::make_unique<DummyContext>();
+
+    return true;
+#else
+    QMessageBox::critical(this, tr("Metal not available!"),
+                          tr("yuzu has not been compiled with Metal support."));
     return false;
 #endif
 }

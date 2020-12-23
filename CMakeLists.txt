@@ -26,6 +26,10 @@ option(ENABLE_CUBEB "Enables the cubeb audio backend" ON)
 
 option(ENABLE_VULKAN "Enables Vulkan backend" ON)
 
+if (APPLE)
+    option(ENABLE_METAL "Enables Vulkan backend" ON)
+endif()
+
 option(USE_DISCORD_PRESENCE "Enables Discord Rich Presence" OFF)
 
 # Default to a Release build

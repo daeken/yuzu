@@ -320,9 +320,22 @@ else()
 endif()
 
 if (ARCHITECTURE_x86_64)
-    target_sources(video_core STATIC
+    target_sources(video_core PRIVATE
         macro/macro_jit_x64.cpp
         macro/macro_jit_x64.h
     )
     target_link_libraries(video_core PRIVATE xbyak)
+endif()
+
+if (ENABLE_METAL)
+    target_compile_definitions(video_core PRIVATE HAS_METAL)
+    find_library(METAL Metal)
+    find_library(QUARTZCORE QuartzCore)
+    target_sources(video_core PRIVATE
+        renderer_metal/renderer_metal.mm
+        renderer_metal/renderer_metal.h
+        renderer_metal/mtl_rasterizer.mm
+        renderer_metal/mtl_rasterizer.h
+    )
+    target_link_libraries(video_core PRIVATE ${METAL} ${QUARTZCORE})
 endif()

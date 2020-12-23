@@ -260,6 +260,7 @@ void DebuggerBackend::Write(const Entry& entry) {
     SUB(Render, Software)                                                                          \
     SUB(Render, OpenGL)                                                                            \
     SUB(Render, Vulkan)                                                                            \
+    SUB(Render, Metal)                                                                             \
     CLS(Audio)                                                                                     \
     SUB(Audio, DSP)                                                                                \
     SUB(Audio, Sink)                                                                               \

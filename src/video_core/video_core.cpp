@@ -14,6 +14,9 @@
 #ifdef HAS_VULKAN
 #include "video_core/renderer_vulkan/renderer_vulkan.h"
 #endif
+#ifdef HAS_METAL
+#include "video_core/renderer_metal/renderer_metal.h"
+#endif
 #include "video_core/video_core.h"
 
 namespace {
@@ -31,6 +34,11 @@ std::unique_ptr<VideoCore::RendererBase> CreateRenderer(
 #ifdef HAS_VULKAN
     case Settings::RendererBackend::Vulkan:
         return std::make_unique<Vulkan::RendererVulkan>(telemetry_session, emu_window, cpu_memory,
+                                                        gpu, std::move(context));
+#endif
+#ifdef HAS_METAL
+    case Settings::RendererBackend::Metal:
+        return std::make_unique<Metal::RendererMetal>(telemetry_session, emu_window, cpu_memory,
                                                         gpu, std::move(context));
 #endif
     default:

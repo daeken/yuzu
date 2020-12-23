@@ -23,6 +23,7 @@ namespace Settings {
 enum class RendererBackend {
     OpenGL = 0,
     Vulkan = 1,
+    Metal = 2,
 };
 
 enum class GPUAccuracy : u32 {
@@ -136,6 +137,7 @@ struct Values {
     Setting<RendererBackend> renderer_backend;
     bool renderer_debug;
     Setting<int> vulkan_device;
+    Setting<int> metal_device;
 
     Setting<u16> resolution_factor{1};
     Setting<int> aspect_ratio;

@@ -20,10 +20,16 @@
 #include "video_core/renderer_vulkan/renderer_vulkan.h"
 #endif
 
+#ifdef HAS_METAL
+#include "video_core/renderer_metal/renderer_metal.h"
+#endif
+
 ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigureGraphics) {
     vulkan_device = Settings::values.vulkan_device.GetValue();
     RetrieveVulkanDevices();
+    metal_device = Settings::values.metal_device.GetValue();
+    RetrieveMetalDevices();
 
     ui->setupUi(this);
 
@@ -59,6 +65,9 @@ void ConfigureGraphics::UpdateDeviceSelection(int device) {
     }
     if (GetCurrentGraphicsBackend() == Settings::RendererBackend::Vulkan) {
         vulkan_device = device;
+    }
+    else if (GetCurrentGraphicsBackend() == Settings::RendererBackend::Metal) {
+        metal_device = device;
     }
 }
 
@@ -108,6 +117,9 @@ void ConfigureGraphics::ApplyConfiguration() {
         if (Settings::values.vulkan_device.UsingGlobal()) {
             Settings::values.vulkan_device.SetValue(vulkan_device);
         }
+        if (Settings::values.metal_device.UsingGlobal()) {
+            Settings::values.metal_device.SetValue(metal_device);
+        }
         if (Settings::values.aspect_ratio.UsingGlobal()) {
             Settings::values.aspect_ratio.SetValue(ui->aspect_ratio_combobox->currentIndex());
         }
@@ -130,6 +142,7 @@ void ConfigureGraphics::ApplyConfiguration() {
         if (ui->api->currentIndex() == ConfigurationShared::USE_GLOBAL_INDEX) {
             Settings::values.renderer_backend.SetGlobal(true);
             Settings::values.vulkan_device.SetGlobal(true);
+            Settings::values.metal_device.SetGlobal(true);
         } else {
             Settings::values.renderer_backend.SetGlobal(false);
             Settings::values.renderer_backend.SetValue(GetCurrentGraphicsBackend());
@@ -138,6 +151,12 @@ void ConfigureGraphics::ApplyConfiguration() {
                 Settings::values.vulkan_device.SetValue(vulkan_device);
             } else {
                 Settings::values.vulkan_device.SetGlobal(true);
+            }
+            if (GetCurrentGraphicsBackend() == Settings::RendererBackend::Metal) {
+                Settings::values.metal_device.SetGlobal(false);
+                Settings::values.metal_device.SetValue(metal_device);
+            } else {
+                Settings::values.metal_device.SetGlobal(true);
             }
         }
 
@@ -198,6 +217,10 @@ void ConfigureGraphics::UpdateDeviceComboBox() {
         ui->api->currentIndex() == ConfigurationShared::USE_GLOBAL_INDEX) {
         vulkan_device = Settings::values.vulkan_device.GetValue();
     }
+    if (!Settings::IsConfiguringGlobal() &&
+        ui->api->currentIndex() == ConfigurationShared::USE_GLOBAL_INDEX) {
+        metal_device = Settings::values.metal_device.GetValue();
+    }
     switch (GetCurrentGraphicsBackend()) {
     case Settings::RendererBackend::OpenGL:
         ui->device->addItem(tr("OpenGL Graphics Device"));
@@ -209,6 +232,13 @@ void ConfigureGraphics::UpdateDeviceComboBox() {
         }
         ui->device->setCurrentIndex(vulkan_device);
         enabled = !vulkan_devices.empty();
+        break;
+    case Settings::RendererBackend::Metal:
+        for (const auto& device : metal_devices) {
+            ui->device->addItem(device);
+        }
+        ui->device->setCurrentIndex(metal_device);
+        enabled = !metal_devices.empty();
         break;
     }
     // If in per-game config and use global is selected, don't enable.
@@ -222,6 +252,15 @@ void ConfigureGraphics::RetrieveVulkanDevices() {
     vulkan_devices.clear();
     for (auto& name : Vulkan::RendererVulkan::EnumerateDevices()) {
         vulkan_devices.push_back(QString::fromStdString(name));
+    }
+#endif
+}
+
+void ConfigureGraphics::RetrieveMetalDevices() {
+#ifdef HAS_METAL
+    metal_devices.clear();
+    for (auto& name : Metal::RendererMetal::EnumerateDevices()) {
+        metal_devices.push_back(QString::fromStdString(name));
     }
 #endif
 }

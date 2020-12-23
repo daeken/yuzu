@@ -54,6 +54,8 @@ static const char* TranslateRenderer(Settings::RendererBackend backend) {
         return "OpenGL";
     case Settings::RendererBackend::Vulkan:
         return "Vulkan";
+    case Settings::RendererBackend::Metal:
+        return "Metal";
     }
     return "Unknown";
 }

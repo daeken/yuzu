@@ -284,6 +284,10 @@ if (ENABLE_VULKAN)
     target_compile_definitions(yuzu PRIVATE HAS_VULKAN)
 endif()
 
+if (ENABLE_METAL)
+    target_compile_definitions(yuzu PRIVATE HAS_METAL)
+endif()
+
 if (APPLE)
     find_library(COREAUDIO CoreAudio)
     find_library(COREMEDIA CoreMedia)

@@ -38,6 +38,7 @@ private:
     void UpdateDeviceSelection(int device);
 
     void RetrieveVulkanDevices();
+    void RetrieveMetalDevices();
 
     void SetupPerGameUI();
 
@@ -50,6 +51,7 @@ private:
     ConfigurationShared::CheckState use_disk_shader_cache;
     ConfigurationShared::CheckState use_asynchronous_gpu_emulation;
 
-    std::vector<QString> vulkan_devices;
+    std::vector<QString> vulkan_devices, metal_devices;
     u32 vulkan_device{};
+    u32 metal_device{};
 };
